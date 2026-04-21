@@ -34,7 +34,6 @@ dead-code-hunter/
 │   ├── ISSUE_TEMPLATE/
 │   └── pull_request_template.md
 ├── CONTRIBUTING.md    # ← you are here
-├── CHANGELOG.md
 └── README.md
 ```
 
@@ -181,24 +180,23 @@ Include sample output and the project you tested against in the PR description.
 
 | Branch | Purpose | How to target |
 |--------|---------|---------------|
-| `main` | Stable, released code | Never directly |
-| `develop` | Active development | **Target all PRs here** |
-| `feature/xyz` | Your work | Branch from `develop`, PR back to `develop` |
+| `main` | Stable, released code | **Target all PRs here** |
+| `feature/xyz` | Your work | Branch from `main`, PR back to `main` |
 
 ```bash
-git checkout develop
-git pull origin develop
+git checkout main
+git pull origin main
 git checkout -b feature/add-kotlin-plugin
 # ... make changes ...
 git push origin feature/add-kotlin-plugin
-# Open PR targeting develop on GitHub
+# Open PR targeting main on GitHub
 ```
 
 ---
 
 ## Submitting a PR
 
-1. Target `develop`, not `main`
+1. Target `main`
 2. Fill out the PR template checklist
 3. CI must pass (build + type check)
 4. At least one reviewer approval required
@@ -207,13 +205,13 @@ git push origin feature/add-kotlin-plugin
 
 ## Release process
 
-Releases are owner-only and fully automated. When the owner pushes to `develop`, the release workflow automatically:
+Releases are owner-only and fully automated. When code is merged to `main`, the release workflow automatically:
 
 1. Bumps the patch version
-2. Publishes `@dead-code-hunter/core` and `dead-code-hunter` to npm
+2. Publishes `dead-code-hunter-core` and `dead-code-hunter` to npm
 3. Creates a GitHub Release with auto-generated notes
 
-**Contributors don't need to worry about this** - just get the PR merged to `develop`.
+**Contributors don't need to worry about this** - just get the PR merged to `main`.
 
 ---
 
