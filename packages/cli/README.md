@@ -16,10 +16,16 @@ dch analyze
 
 | Command | Description |
 |---------|-------------|
-| `dch analyze [dir]` | Scan for dead symbols - functions, classes, variables, and more |
-| `dch fix [dir]` | Interactively delete or suppress each dead symbol one by one |
-| `dch watch [dir]` | Re-analyze automatically on every file save |
+| `dch analyze [dir]` | Scan for dead symbols - functions, classes, variables |
+| `dch files [dir]` | Find source files that are never imported by anything |
 | `dch deps [dir]` | Find packages declared in your manifest but never imported |
+| `dch dupes [dir]` | Find duplicate or near-identical function bodies |
+| `dch todos [dir]` | Find stale TODO / FIXME / HACK comments with git age |
+| `dch unreachable [dir]` | Find code after return/throw that can never execute |
+| `dch catches [dir]` | Find empty catch blocks that silently swallow errors |
+| `dch config [dir]` | Find .env / config.json keys never used in source code |
+| `dch fix [dir]` | Interactively delete or suppress each dead symbol |
+| `dch watch [dir]` | Re-analyze automatically on every file save |
 | `dch baseline save [dir]` | Record current dead symbols as a snapshot |
 | `dch baseline diff [dir]` | Show dead symbols added since the last snapshot |
 | `dch baseline check [dir]` | Like `diff` but exits with code 1 (for CI) |
