@@ -35,15 +35,19 @@ jobs:
       - name: Build all packages
         run: npm run build
 
-      # ── Auto-bump patch version ──────────────────────────────────────────────
+      # ── Auto-bump patch version from latest git tag ─────────────────────────
       - name: Bump version
         id: version
         run: |
-          CURRENT=$(node -p "require('./packages/cli/package.json').version")
+          # Get latest tag, fall back to v1.0.0 if none exist
+          LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+          LATEST=${LATEST:-v1.0.0}
+          CURRENT="${LATEST#v}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
           NEW="$MAJOR.$MINOR.$((PATCH + 1))"
           echo "version=$NEW" >> "$GITHUB_OUTPUT"
           echo "tag=v$NEW" >> "$GITHUB_OUTPUT"
+          echo "Bumped $CURRENT → $NEW"
 
           # Update all package.json versions
           npm version "$NEW" --no-git-tag-version --workspace packages/core
