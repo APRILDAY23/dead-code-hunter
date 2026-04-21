@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { glob } from 'glob';
+import fg from 'fast-glob';
 import ignore from 'ignore';
 import type { Config } from './types';
 
@@ -31,10 +31,10 @@ export async function scanFiles(rootDir: string, config: Config): Promise<string
     }
   }
 
-  const files = await glob('**/*', {
+  const files = await fg('**/*', {
     cwd: rootDir,
     absolute: true,
-    nodir: true,
+    onlyFiles: true,
     ignore: config.exclude,
   });
 
