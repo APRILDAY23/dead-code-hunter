@@ -21,5 +21,7 @@ export type { UnusedFile, FilesResult } from './files';
 export type { TodoItem, TodosResult } from './todos';
 export type { DuplicateGroup, DuplicateOccurrence, DupesResult } from './dupes';
 export type { UnreachableCode, UnreachableResult } from './unreachable';
-export type { EmptyCatch, CatchesResult } from './catches';
+export type { EmptyCatch, CatchesResult, CatchSeverity } from './catches';
 export type { DeadConfigKey, ConfigKeysResult } from './configkeys';
+export type { UnreachableSeverity } from './unreachable';
+export type { TodoKind } from './todos';
