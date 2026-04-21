@@ -13,8 +13,6 @@ jobs:
     name: Publish to npm + GitHub Release
     runs-on: ubuntu-latest
 
-    if: github.actor == 'APRILDAY23'
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,15 +52,16 @@ jobs:
           npm version "$VERSION" --no-git-tag-version --workspace packages/core
           npm version "$VERSION" --no-git-tag-version --workspace packages/cli
 
-      # ── Publish @dead-code-hunter/core to npm ───────────────────────────────
+      # ── Publish to npm (non-blocking so GitHub Release always runs) ──────────
       - name: Publish core to npm
         run: npm publish --workspace packages/core --access public
+        continue-on-error: true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # ── Publish dead-code-hunter CLI to npm ─────────────────────────────────
       - name: Publish CLI to npm
         run: npm publish --workspace packages/cli --access public
+        continue-on-error: true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -84,7 +83,7 @@ jobs:
 
             **Quick run (no install)**
             ```bash
-            npx dead-code-hunter analyze
+            npx dead-code-hunter@${{ steps.version.outputs.version }} analyze
             ```
 
             ---
