@@ -7,6 +7,10 @@ import {
   analyzeCatches,
   analyzeConfigKeys,
   analyzeDeps,
+  analyzeConsole,
+  analyzeComplexity,
+  analyzeCircular,
+  analyzeSecrets,
 } from 'dead-code-hunter-core';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -18,7 +22,7 @@ function humanSize(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
 }
 
-function bar(count: number, max: number, width = 20): string {
+function bar(count: number, max: number, width = 18): string {
   if (max === 0) return chalk.dim('─'.repeat(width));
   const filled = Math.round((count / max) * width);
   return chalk.red('█'.repeat(filled)) + chalk.dim('░'.repeat(width - filled));
@@ -31,7 +35,7 @@ export async function scanCommand(
   const rootDir = path.resolve(dir ?? process.cwd());
   process.stderr.write(chalk.dim(`Running full scan of ${rootDir}...\n\n`));
 
-  const [symbols, files, todos, dupes, unreachable, catches, config, deps] = await Promise.all([
+  const [symbols, files, todos, dupes, unreachable, catches, config, deps, consoleStmts, complexity, circular, secrets] = await Promise.all([
     analyze(rootDir).catch(() => null),
     analyzeFiles(rootDir).catch(() => null),
     analyzeTodos(rootDir).catch(() => null),
@@ -40,72 +44,88 @@ export async function scanCommand(
     analyzeCatches(rootDir).catch(() => null),
     analyzeConfigKeys(rootDir).catch(() => null),
     analyzeDeps(rootDir).catch(() => null),
+    analyzeConsole(rootDir, true).catch(() => null),
+    analyzeComplexity(rootDir, 10).catch(() => null),
+    analyzeCircular(rootDir).catch(() => null),
+    analyzeSecrets(rootDir).catch(() => null),
   ]);
 
   const summary = {
-    deadSymbols: symbols?.deadSymbols.length ?? 0,
-    unusedFiles: files?.unusedFiles.length ?? 0,
-    reclaimableBytes: files?.totalBytes ?? 0,
-    staleComments: todos?.todos.length ?? 0,
-    duplicateGroups: dupes?.duplicateGroups.length ?? 0,
-    redundantLines: dupes?.totalWastedLines ?? 0,
-    unreachableBlocks: unreachable?.unreachableCode.length ?? 0,
+    deadSymbols:         symbols?.deadSymbols.length ?? 0,
+    unusedFiles:         files?.unusedFiles.length ?? 0,
+    reclaimableBytes:    files?.totalBytes ?? 0,
+    staleComments:       todos?.todos.length ?? 0,
+    duplicateGroups:     dupes?.duplicateGroups.length ?? 0,
+    redundantLines:      dupes?.totalWastedLines ?? 0,
+    unreachableBlocks:   unreachable?.unreachableCode.length ?? 0,
     errorHandlingIssues: catches?.emptyCatches.length ?? 0,
-    unusedConfigKeys: config?.deadKeys.length ?? 0,
-    unusedDeps: deps?.deadDependencies.length ?? 0,
+    unusedConfigKeys:    config?.deadKeys.length ?? 0,
+    unusedDeps:          deps?.deadDependencies.length ?? 0,
+    debugStatements:     consoleStmts?.statements.length ?? 0,
+    complexFunctions:    complexity?.functions.filter(f => f.risk === 'high' || f.risk === 'critical').length ?? 0,
+    circularCycles:      circular?.cycles.length ?? 0,
+    secretFindings:      secrets?.findings.filter(f => f.confidence !== 'low').length ?? 0,
     durationMs: Math.max(
-      symbols?.durationMs ?? 0,
-      files?.durationMs ?? 0,
-      todos?.durationMs ?? 0,
-      dupes?.durationMs ?? 0,
-      unreachable?.durationMs ?? 0,
-      catches?.durationMs ?? 0,
-      config?.durationMs ?? 0,
-      deps?.durationMs ?? 0,
+      symbols?.durationMs ?? 0, files?.durationMs ?? 0,
+      todos?.durationMs ?? 0, dupes?.durationMs ?? 0,
+      unreachable?.durationMs ?? 0, catches?.durationMs ?? 0,
+      config?.durationMs ?? 0, deps?.durationMs ?? 0,
+      consoleStmts?.durationMs ?? 0, complexity?.durationMs ?? 0,
+      circular?.durationMs ?? 0, secrets?.durationMs ?? 0,
     ),
   };
 
   const totalIssues =
     summary.deadSymbols + summary.unusedFiles + summary.staleComments +
-    summary.duplicateGroups + summary.unreachableBlocks +
-    summary.errorHandlingIssues + summary.unusedConfigKeys + summary.unusedDeps;
+    summary.duplicateGroups + summary.unreachableBlocks + summary.errorHandlingIssues +
+    summary.unusedConfigKeys + summary.unusedDeps + summary.debugStatements +
+    summary.complexFunctions + summary.circularCycles + summary.secretFindings;
 
   let output: string;
 
   if (options.format === 'json') {
-    output = JSON.stringify({ summary, details: { symbols, files, todos, dupes, unreachable, catches, config, deps } }, null, 2) + '\n';
+    output = JSON.stringify({
+      summary,
+      details: { symbols, files, todos, dupes, unreachable, catches, config, deps, consoleStmts, complexity, circular, secrets },
+    }, null, 2) + '\n';
   } else {
     const lines: string[] = [];
 
     lines.push(chalk.bold('Dead Code Hunter - Full Scan Report'));
-    lines.push(chalk.dim('='.repeat(50)));
+    lines.push(chalk.dim('='.repeat(56)));
     lines.push('');
 
     const maxVal = Math.max(
       summary.deadSymbols, summary.unusedFiles, summary.staleComments,
-      summary.duplicateGroups, summary.unreachableBlocks,
-      summary.errorHandlingIssues, summary.unusedConfigKeys, summary.unusedDeps,
+      summary.duplicateGroups, summary.unreachableBlocks, summary.errorHandlingIssues,
+      summary.unusedConfigKeys, summary.unusedDeps, summary.debugStatements,
+      summary.complexFunctions, summary.circularCycles, summary.secretFindings,
     );
 
     const rows: Array<[string, number, string]> = [
-      ['Dead symbols',        summary.deadSymbols,          `run: dch analyze`],
-      ['Unused files',        summary.unusedFiles,           `${humanSize(summary.reclaimableBytes)} reclaimable - run: dch files`],
-      ['Stale comments',      summary.staleComments,         'run: dch todos'],
-      ['Duplicate groups',    summary.duplicateGroups,       `~${summary.redundantLines} redundant lines - run: dch dupes`],
-      ['Unreachable blocks',  summary.unreachableBlocks,     'run: dch unreachable'],
-      ['Error handling',      summary.errorHandlingIssues,   'run: dch catches'],
-      ['Unused config keys',  summary.unusedConfigKeys,      'run: dch config'],
-      ['Unused deps',         summary.unusedDeps,            'run: dch deps'],
+      ['Dead symbols',        summary.deadSymbols,          'run: dch analyze'],
+      ['Unused files',        summary.unusedFiles,          `${humanSize(summary.reclaimableBytes)} reclaimable - run: dch files`],
+      ['Stale comments',      summary.staleComments,        'run: dch todos'],
+      ['Duplicate groups',    summary.duplicateGroups,      `~${summary.redundantLines} redundant lines - run: dch dupes`],
+      ['Unreachable code',    summary.unreachableBlocks,    'run: dch unreachable'],
+      ['Error handling',      summary.errorHandlingIssues,  'run: dch catches'],
+      ['Unused config keys',  summary.unusedConfigKeys,     'run: dch config'],
+      ['Unused deps',         summary.unusedDeps,           'run: dch deps'],
+      ['Debug statements',    summary.debugStatements,      'run: dch console'],
+      ['Complex functions',   summary.complexFunctions,     'run: dch complexity'],
+      ['Circular imports',    summary.circularCycles,       'run: dch circular'],
+      ['Secrets found',       summary.secretFindings,       'run: dch secrets'],
     ];
 
     for (const [label, count, hint] of rows) {
       const countStr = count === 0 ? chalk.green('  0') : chalk.red(String(count).padStart(3));
       const barStr = bar(count, maxVal);
-      lines.push(`  ${label.padEnd(20)} ${countStr}  ${barStr}  ${count > 0 ? chalk.dim(hint) : chalk.green('clean')}`);
+      const hintStr = count > 0 ? chalk.dim(hint) : chalk.green('clean');
+      lines.push(`  ${label.padEnd(20)} ${countStr}  ${barStr}  ${hintStr}`);
     }
 
     lines.push('');
-    lines.push(chalk.dim('─'.repeat(50)));
+    lines.push(chalk.dim('─'.repeat(56)));
 
     if (totalIssues === 0) {
       lines.push(chalk.green(chalk.bold('  All clean! No issues found.')));
@@ -115,7 +135,7 @@ export async function scanCommand(
         chalk.dim(`scanned in ${summary.durationMs}ms`),
       );
       lines.push('');
-      lines.push(chalk.dim('  Tip: run any command above for details, e.g. dch analyze'));
+      lines.push(chalk.dim('  Tip: run any command above for details, e.g. dch secrets'));
     }
 
     output = lines.join('\n') + '\n';
