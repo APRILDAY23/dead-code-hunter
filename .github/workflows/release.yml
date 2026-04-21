@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Build all packages
-        run: npm run build --workspaces --if-present
+        run: npm run build
 
       # ── Extract version from tag ─────────────────────────────────────────────
       - name: Extract version
