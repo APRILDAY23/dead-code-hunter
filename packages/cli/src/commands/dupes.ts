@@ -22,18 +22,42 @@ export async function dupesCommand(
     if (result.duplicateGroups.length === 0) {
       lines.push(chalk.green('No duplicate code found!'));
     } else {
+      let i = 1;
       for (const group of result.duplicateGroups) {
-        lines.push(chalk.yellow(`Duplicate block (${group.lineCount} lines, ${group.occurrences.length} copies):`));
+        const wastedLines = group.lineCount * (group.occurrences.length - 1);
+        lines.push(
+          chalk.bold(`[${i++}] Duplicate block`) +
+          chalk.dim(` - ${group.lineCount} lines x ${group.occurrences.length} copies = ${wastedLines} redundant lines`),
+        );
+
         for (const occ of group.occurrences) {
           const rel = path.relative(rootDir, occ.file);
           lines.push(
-            `  ${chalk.dim('-')} ${chalk.bold(occ.name)} @ ${chalk.cyan(rel)}:${chalk.yellow(String(occ.startLine))}-${chalk.yellow(String(occ.endLine))}`,
+            `  ${chalk.dim('at')} ${chalk.bold(occ.name)} ${chalk.cyan(rel)}:${chalk.yellow(String(occ.startLine))}-${chalk.yellow(String(occ.endLine))}`,
           );
         }
+
+        if (group.snippet) {
+          lines.push(chalk.dim('  Preview:'));
+          for (const snippetLine of group.snippet.split('\n').slice(0, 4)) {
+            lines.push(chalk.dim(`    ${snippetLine}`));
+          }
+        }
+
+        if (group.suggestedLocation) {
+          const relLoc = path.relative(rootDir, group.suggestedLocation);
+          lines.push(chalk.blue(`  Suggestion: extract to ${relLoc}/`));
+        }
+
         lines.push('');
       }
+
+      lines.push(chalk.bold('Summary:'));
+      lines.push(`  Duplicate groups:  ${result.duplicateGroups.length}`);
+      lines.push(`  Redundant lines:   ~${result.totalWastedLines}`);
+      lines.push(`  Scanned files:     ${result.scannedFiles}`);
     }
-    output = lines.join('\n');
+    output = lines.join('\n') + '\n';
   }
 
   if (options.output) {
@@ -44,9 +68,8 @@ export async function dupesCommand(
   }
 
   if (result.duplicateGroups.length > 0) {
-    const totalWasted = result.duplicateGroups.reduce((s, g) => s + g.lineCount * (g.occurrences.length - 1), 0);
     process.stderr.write(
-      chalk.yellow(`\nFound ${chalk.bold(String(result.duplicateGroups.length))} duplicate group(s) - ~${totalWasted} redundant lines - ${result.durationMs}ms\n`),
+      chalk.yellow(`\nFound ${chalk.bold(String(result.duplicateGroups.length))} duplicate group(s) - ~${result.totalWastedLines} redundant lines - ${result.durationMs}ms\n`),
     );
   }
 

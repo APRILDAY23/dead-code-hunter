@@ -3,8 +3,10 @@ import * as path from 'path';
 
 export interface BlameInfo {
   commitHash: string;
-  authorTime: number; // unix timestamp
+  authorTime: number;
   daysAgo: number;
+  author: string;
+  summary: string;
 }
 
 export function getLineBlame(filePath: string, line: number): BlameInfo | null {
@@ -12,18 +14,26 @@ export function getLineBlame(filePath: string, line: number): BlameInfo | null {
     const dir = path.dirname(filePath);
     const out = execSync(
       `git blame --porcelain -L ${line},${line} "${filePath}"`,
-      { cwd: dir, stdio: ['pipe', 'pipe', 'pipe'], timeout: 5000 }
+      { cwd: dir, stdio: ['pipe', 'pipe', 'pipe'], timeout: 5000 },
     ).toString();
 
     const hashMatch = /^([0-9a-f]{40})/.exec(out);
     const timeMatch = /^author-time (\d+)/m.exec(out);
+    const authorMatch = /^author (.+)/m.exec(out);
+    const summaryMatch = /^summary (.+)/m.exec(out);
 
     if (!hashMatch || !timeMatch) return null;
 
     const authorTime = parseInt(timeMatch[1], 10);
     const daysAgo = Math.floor((Date.now() / 1000 - authorTime) / 86400);
 
-    return { commitHash: hashMatch[1], authorTime, daysAgo };
+    return {
+      commitHash: hashMatch[1],
+      authorTime,
+      daysAgo,
+      author: authorMatch?.[1]?.trim() ?? 'Unknown',
+      summary: summaryMatch?.[1]?.trim() ?? '',
+    };
   } catch {
     return null;
   }
@@ -50,7 +60,7 @@ export function getCommitDateNAgo(filePath: string, n: number): number | null {
     const dir = path.dirname(filePath);
     const out = execSync(
       `git log --format="%ct" -${n} -- "${filePath}"`,
-      { cwd: dir, stdio: ['pipe', 'pipe', 'pipe'], timeout: 5000 }
+      { cwd: dir, stdio: ['pipe', 'pipe', 'pipe'], timeout: 5000 },
     ).toString().trim();
 
     const lines = out.split('\n').filter(Boolean);
