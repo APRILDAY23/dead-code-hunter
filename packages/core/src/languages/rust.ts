@@ -25,7 +25,8 @@ export const rustPlugin: LanguagePlugin = {
       const check = (re: RegExp, kind: Parameters<typeof definitions['push']>[0]['kind']) => {
         const m = re.exec(line);
         if (m) {
-          definitions.push({ name: m[2], kind, file: filePath, line: lineNum, column: 0, exported: !!m[1] });
+          const ignored = lineNum > 1 && /\/\/\s*dch-ignore/.test(lines[lineNum - 2]);
+          definitions.push({ name: m[2], kind, file: filePath, line: lineNum, column: 0, exported: !!m[1], ignored });
           return true;
         }
         return false;

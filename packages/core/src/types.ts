@@ -15,8 +15,10 @@ export interface Definition {
   kind: SymbolKind;
   file: string;
   line: number;
+  endLine?: number;   // last line of the definition body (for fix command)
   column: number;
   exported: boolean;
+  ignored?: boolean;  // true if line has // dch-ignore comment
 }
 
 export interface Reference {
@@ -28,6 +30,7 @@ export interface Reference {
 export interface DeadSymbol {
   definition: Definition;
   reason: string;
+  daysSinceLastChange?: number;
 }
 
 export interface LanguageStats {
@@ -64,4 +67,30 @@ export interface Config {
   ignorePatterns: string[];
   languages: string[];
   minConfidence: number;
+  deadSince?: string; // e.g. "30d", "2w", "3m", "10commits"
+}
+
+export interface DeadDependency {
+  name: string;
+  manager: string;        // npm, pip, cargo, go, gem, composer
+  declaredIn: string;     // path to manifest file
+  installedVersion?: string;
+}
+
+export interface DepsResult {
+  scannedFiles: number;
+  deadDependencies: DeadDependency[];
+  durationMs: number;
+}
+
+export interface BaselineEntry {
+  name: string;
+  kind: string;
+  file: string;
+  line: number;
+}
+
+export interface Baseline {
+  createdAt: string;
+  deadSymbols: BaselineEntry[];
 }

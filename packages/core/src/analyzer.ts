@@ -4,6 +4,7 @@ import { scanFiles } from './scanner';
 import { SymbolGraph } from './graph';
 import { getPluginByExt } from './languages/index';
 import { loadConfig } from './config';
+import { getLineBlame, parseDuration, isInGitRepo } from './git';
 import type { AnalysisResult, Definition, Config, LanguageStats, CleanupStats } from './types';
 
 // Average lines per symbol kind — used to estimate cleanup potential
@@ -79,7 +80,25 @@ export async function analyze(rootDir: string, config?: Partial<Config>): Promis
     files.filter(f => cfg.entryPoints.some(ep => path.basename(f) === ep))
   );
 
-  const deadSymbols = graph.findDeadSymbols(entryFiles, cfg.ignorePatterns);
+  let deadSymbols = graph.findDeadSymbols(entryFiles, cfg.ignorePatterns);
+
+  // Enrich with git blame and optionally filter by age
+  if (cfg.deadSince && isInGitRepo(rootDir)) {
+    const duration = parseDuration(cfg.deadSince);
+    if (duration?.days !== undefined) {
+      deadSymbols = deadSymbols.filter(sym => {
+        const blame = getLineBlame(sym.definition.file, sym.definition.line);
+        if (!blame) return true;
+        (sym as { daysSinceLastChange?: number }).daysSinceLastChange = blame.daysAgo;
+        return blame.daysAgo >= duration.days!;
+      });
+    }
+  } else if (isInGitRepo(rootDir)) {
+    for (const sym of deadSymbols) {
+      const blame = getLineBlame(sym.definition.file, sym.definition.line);
+      if (blame) (sym as { daysSinceLastChange?: number }).daysSinceLastChange = blame.daysAgo;
+    }
+  }
 
   // Group dead symbols by file
   const byFile = new Map<string, (typeof deadSymbols)[0][]>();
