@@ -7,7 +7,7 @@ import { loadConfig } from './config';
 import { getLineBlame, parseDuration, isInGitRepo } from './git';
 import type { AnalysisResult, Definition, Config, LanguageStats, CleanupStats } from './types';
 
-// Average lines per symbol kind — used to estimate cleanup potential
+// Average lines per symbol kind - used to estimate cleanup potential
 const AVG_LINES: Record<string, number> = {
   function: 12,
   method: 10,

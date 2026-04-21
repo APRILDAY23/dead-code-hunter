@@ -21,14 +21,14 @@ Thanks for your interest in contributing! This guide covers everything you need 
 ```
 dead-code-hunter/
 ├── packages/
-│   ├── core/          # @dead-code-hunter/core — shared analysis engine
+│   ├── core/          # @dead-code-hunter/core - shared analysis engine
 │   │   └── src/
 │   │       ├── languages/     # One file per language plugin
 │   │       ├── reporters/     # text, JSON, HTML, SARIF output
 │   │       ├── analyzer.ts    # Orchestrates scanning + graph
 │   │       ├── graph.ts       # Cross-file symbol reference graph
 │   │       └── scanner.ts     # File discovery + .gitignore support
-│   └── cli/           # dead-code-hunter — the `dch` CLI tool
+│   └── cli/           # dead-code-hunter - the `dch` CLI tool
 ├── .github/
 │   ├── workflows/     # CI and release automation
 │   ├── ISSUE_TEMPLATE/
@@ -64,13 +64,13 @@ node packages/cli/dist/index.js analyze .
 ## Running locally
 
 ```bash
-# Terminal 1 — rebuild core on changes
+# Terminal 1 - rebuild core on changes
 cd packages/core && npm run dev
 
-# Terminal 2 — rebuild CLI on changes
+# Terminal 2 - rebuild CLI on changes
 cd packages/cli && npm run dev
 
-# Terminal 3 — run against any directory
+# Terminal 3 - run against any directory
 node packages/cli/dist/index.js analyze /path/to/your/project
 ```
 
@@ -86,7 +86,7 @@ node packages/cli/dist/index.js analyze --help
 
 Each language is a single file in `packages/core/src/languages/`. Adding a new one takes about 30–60 minutes.
 
-### Step 1 — Create the plugin file
+### Step 1 - Create the plugin file
 
 Copy an existing simple plugin as a starting point:
 
@@ -94,7 +94,7 @@ Copy an existing simple plugin as a starting point:
 cp packages/core/src/languages/ruby.ts packages/core/src/languages/kotlin.ts
 ```
 
-### Step 2 — Implement the plugin
+### Step 2 - Implement the plugin
 
 Your plugin must export a `LanguagePlugin` object:
 
@@ -142,7 +142,7 @@ export const kotlinPlugin: LanguagePlugin = {
 
 **Exported flag:** set `true` if the symbol is publicly accessible (`public` in Java, uppercase in Go, no leading `_` in Python).
 
-### Step 3 — Register the plugin
+### Step 3 - Register the plugin
 
 Add to `packages/core/src/languages/index.ts`:
 
@@ -163,7 +163,7 @@ kotlin: ['.kt', '.kts'],
 
 Add `'kotlin'` to the default `languages` array in `packages/core/src/config.ts`.
 
-### Step 4 — Test it
+### Step 4 - Test it
 
 ```bash
 node packages/cli/dist/index.js analyze /path/to/kotlin/project --languages kotlin
@@ -171,7 +171,7 @@ node packages/cli/dist/index.js analyze /path/to/kotlin/project --languages kotl
 
 Verify dead functions are reported and live functions are not.
 
-### Step 5 — Open a PR
+### Step 5 - Open a PR
 
 Include sample output and the project you tested against in the PR description.
 
@@ -213,7 +213,7 @@ Releases are owner-only and fully automated. When the owner pushes to `develop`,
 2. Publishes `@dead-code-hunter/core` and `dead-code-hunter` to npm
 3. Creates a GitHub Release with auto-generated notes
 
-**Contributors don't need to worry about this** — just get the PR merged to `develop`.
+**Contributors don't need to worry about this** - just get the PR merged to `develop`.
 
 ---
 

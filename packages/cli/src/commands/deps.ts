@@ -31,7 +31,7 @@ export async function depsCommand(
         lines.push(
           chalk.red('✗') + ' ' + chalk.bold(dep.name) +
           chalk.dim(` (${dep.manager})`) +
-          chalk.dim(` — ${rel}`) +
+          chalk.dim(` - ${rel}`) +
           (dep.installedVersion ? chalk.dim(` @ ${dep.installedVersion}`) : ''),
         );
       }
@@ -48,7 +48,7 @@ export async function depsCommand(
 
   if (result.deadDependencies.length > 0) {
     process.stderr.write(
-      chalk.yellow(`\nFound ${chalk.bold(String(result.deadDependencies.length))} unused dependency(s) across ${result.scannedFiles} files — ${result.durationMs}ms\n`),
+      chalk.yellow(`\nFound ${chalk.bold(String(result.deadDependencies.length))} unused dependency(s) across ${result.scannedFiles} files - ${result.durationMs}ms\n`),
     );
   }
 

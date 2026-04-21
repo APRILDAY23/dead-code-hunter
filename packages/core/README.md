@@ -1,6 +1,6 @@
 # dead-code-hunter-core
 
-Core analysis engine for [Dead Code Hunter](https://www.npmjs.com/package/dead-code-hunter) — the multi-language dead code detection CLI.
+Core analysis engine for [Dead Code Hunter](https://www.npmjs.com/package/dead-code-hunter) - the multi-language dead code detection CLI.
 
 This package is the library used by the `dch` CLI. Install the CLI for the command-line experience:
 
@@ -10,7 +10,7 @@ npm install -g dead-code-hunter
 
 | Command | Description |
 |---------|-------------|
-| `dch analyze [dir]` | Scan for dead symbols — functions, classes, variables, and more |
+| `dch analyze [dir]` | Scan for dead symbols - functions, classes, variables, and more |
 | `dch fix [dir]` | Interactively delete or suppress each dead symbol one by one |
 | `dch watch [dir]` | Re-analyze automatically on every file save |
 | `dch deps [dir]` | Find packages declared in your manifest but never imported |

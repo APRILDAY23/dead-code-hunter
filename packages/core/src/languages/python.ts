@@ -65,14 +65,14 @@ export const pythonPlugin: LanguagePlugin = {
         }
       }
 
-      // References — function calls
+      // References - function calls
       let m: RegExpExecArray | null;
       const callReClone = new RegExp(callRe.source, 'g');
       while ((m = callReClone.exec(line)) !== null) {
         references.push({ name: m[1], file: filePath, line: lineNum });
       }
 
-      // References — identifiers
+      // References - identifiers
       const attrReClone = new RegExp(attrRe.source, 'g');
       while ((m = attrReClone.exec(line)) !== null) {
         references.push({ name: m[1], file: filePath, line: lineNum });

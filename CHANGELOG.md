@@ -15,7 +15,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - Core analysis engine (`@dead-code-hunter/core`) with cross-file symbol reference graph
 - Language plugins: TypeScript/JavaScript (TypeScript Compiler API), Python, Go, Java, Ruby, Rust, PHP, C#
-- Auto-detection of project languages from file extensions — zero config required
+- Auto-detection of project languages from file extensions - zero config required
 - CLI tool (`dead-code-hunter`) with `dch analyze` and `dch init` commands
 - Output formats: text, JSON, HTML, SARIF (GitHub Code Scanning compatible)
 - `--fail-on-dead` flag for CI pipelines

@@ -53,7 +53,7 @@ export function consoleReport(result: AnalysisResult, rootDir: string): string {
     lines.push(`  ${rel(file)}`);
     for (const { definition, reason } of syms) {
       const icon = KIND_ICON[definition.kind] ?? definition.kind;
-      lines.push(`    [${icon}]  ${padEnd(definition.name, 28)} (line ${definition.line})  — ${reason}`);
+      lines.push(`    [${icon}]  ${padEnd(definition.name, 28)} (line ${definition.line})  - ${reason}`);
     }
     lines.push('');
   }

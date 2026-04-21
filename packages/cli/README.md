@@ -1,6 +1,6 @@
 # Dead Code Hunter
 
-Find and eliminate unused code across your entire project — TypeScript, JavaScript, Python, Go, Java, Ruby, Rust, PHP, and C#.
+Find and eliminate unused code across your entire project - TypeScript, JavaScript, Python, Go, Java, Ruby, Rust, PHP, and C#.
 
 ```
 npm install -g dead-code-hunter
@@ -16,7 +16,7 @@ dch analyze
 
 | Command | Description |
 |---------|-------------|
-| `dch analyze [dir]` | Scan for dead symbols — functions, classes, variables, and more |
+| `dch analyze [dir]` | Scan for dead symbols - functions, classes, variables, and more |
 | `dch fix [dir]` | Interactively delete or suppress each dead symbol one by one |
 | `dch watch [dir]` | Re-analyze automatically on every file save |
 | `dch deps [dir]` | Find packages declared in your manifest but never imported |
@@ -49,7 +49,7 @@ dch analyze ./src        # scan a specific path
 | `--dead-since <duration>` | Only show symbols untouched for this long (e.g. `30d`, `2w`, `3m`) |
 
 ```bash
-# CI — fail the build if dead code is introduced
+# CI - fail the build if dead code is introduced
 dch analyze --fail-on-dead
 
 # Only show code that hasn't been touched in 60 days
@@ -80,10 +80,10 @@ src/utils.ts:42  formatDate (function)
   [d]elete  [i]gnore  [s]kip  [q]uit:
 ```
 
-- **d** — permanently deletes the symbol (and its body)
-- **i** — inserts a `// dch-ignore` comment so it's never flagged again
-- **s** — skip for now
-- **q** — quit
+- **d** - permanently deletes the symbol (and its body)
+- **i** - inserts a `// dch-ignore` comment so it's never flagged again
+- **s** - skip for now
+- **q** - quit
 
 ---
 

@@ -13,7 +13,7 @@ const program = new Command();
 
 program
   .name('dch')
-  .description('Dead Code Hunter — find unused code across your entire project')
+  .description('Dead Code Hunter - find unused code across your entire project')
   .version('1.0.0');
 
 // ── analyze ──────────────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ program
         default:
           output = consoleReport(result, rootDir);
           if (result.deadSymbols.length > 0) {
-            process.stderr.write(chalk.yellow(`\nFound ${chalk.bold(String(result.deadSymbols.length))} dead symbol(s) in ${result.scannedFiles} files — ${result.durationMs}ms\n`));
+            process.stderr.write(chalk.yellow(`\nFound ${chalk.bold(String(result.deadSymbols.length))} dead symbol(s) in ${result.scannedFiles} files - ${result.durationMs}ms\n`));
           } else {
             process.stderr.write(chalk.green('\nNo dead code found!\n'));
           }

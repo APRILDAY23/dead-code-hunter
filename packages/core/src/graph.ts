@@ -41,7 +41,7 @@ export class SymbolGraph {
       if (ignoreRegexes.some(r => r.test(definition.name))) continue;
       if (definition.ignored) continue;
 
-      // Exported symbols in entry point files are public API — not dead
+      // Exported symbols in entry point files are public API - not dead
       if (definition.exported && entryFiles.has(definition.file)) continue;
 
       // If no cross-file references exist, it's potentially dead
