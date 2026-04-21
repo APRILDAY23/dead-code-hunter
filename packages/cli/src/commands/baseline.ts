@@ -14,7 +14,7 @@ export async function baselineCommand(
     process.stderr.write(chalk.dim('Analyzing...\n'));
     const result = await analyze(rootDir);
     saveBaseline(result, baselinePath);
-    console.log(chalk.green(`Baseline saved — ${result.deadSymbols.length} dead symbol(s) recorded`));
+    console.log(chalk.green(`Baseline saved - ${result.deadSymbols.length} dead symbol(s) recorded`));
     console.log(chalk.dim(`  → ${baselinePath}`));
 
   } else if (subcommand === 'diff' || subcommand === 'check') {
@@ -36,7 +36,7 @@ export async function baselineCommand(
         const age = sym.daysSinceLastChange !== undefined ? chalk.dim(` · ${sym.daysSinceLastChange}d old`) : '';
         console.log(
           chalk.red('NEW') + ' ' + chalk.bold(sym.definition.name) +
-          chalk.dim(` (${sym.definition.kind})`) + ` — ${chalk.cyan(rel)}:${chalk.yellow(String(sym.definition.line))}` + age,
+          chalk.dim(` (${sym.definition.kind})`) + ` - ${chalk.cyan(rel)}:${chalk.yellow(String(sym.definition.line))}` + age,
         );
       }
       process.stderr.write(chalk.yellow(`\n${newDead.length} new dead symbol(s) since baseline (${baseline.createdAt})\n`));

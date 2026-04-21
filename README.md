@@ -1,6 +1,6 @@
 # Dead Code Hunter
 
-> Find and eliminate unused code across your entire project — multi-language, zero config, CI-ready.
+> Find and eliminate unused code across your entire project - multi-language, zero config, CI-ready.
 
 [![CI](https://github.com/APRILDAY23/dead-code-hunter/actions/workflows/ci.yml/badge.svg)](https://github.com/APRILDAY23/dead-code-hunter/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/dead-code-hunter.svg?color=red)](https://www.npmjs.com/package/dead-code-hunter)
@@ -22,7 +22,7 @@
 | PHP | `.php` | Regex AST |
 | C# | `.cs` | Regex AST |
 
-The analyzer **auto-detects** which languages are present in your project by scanning file extensions — no configuration needed to get started.
+The analyzer **auto-detects** which languages are present in your project by scanning file extensions - no configuration needed to get started.
 
 ---
 
@@ -82,29 +82,29 @@ Cleanup potential:
   Functions: 9   Classes: 2   Variables: 6
 
   src/utils/formatters.ts
-    [fn]    formatLegacyDate    (line 12)  — Defined but never referenced outside its own file
-    [fn]    parseOldTimezone    (line 34)  — Defined but never referenced outside its own file
-    [var]   DEPRECATED_FORMATS  (line 58)  — Defined but never referenced outside its own file
+    [fn]    formatLegacyDate    (line 12)  - Defined but never referenced outside its own file
+    [fn]    parseOldTimezone    (line 34)  - Defined but never referenced outside its own file
+    [var]   DEPRECATED_FORMATS  (line 58)  - Defined but never referenced outside its own file
 
   src/api/old-client.ts
-    [class] LegacyApiClient     (line 1)   — Exported but never imported by any other file
+    [class] LegacyApiClient     (line 1)   - Exported but never imported by any other file
 
   scripts/migrate.py
-    [fn]    run_old_migration   (line 22)  — Defined but never referenced outside its own file
+    [fn]    run_old_migration   (line 22)  - Defined but never referenced outside its own file
 ```
 
 ---
 
 ## CI Integration
 
-### GitHub Actions — fail on dead code
+### GitHub Actions - fail on dead code
 
 ```yaml
 - name: Dead Code Check
   run: dch analyze --fail-on-dead
 ```
 
-### GitHub Actions — upload SARIF to Code Scanning
+### GitHub Actions - upload SARIF to Code Scanning
 
 ```yaml
 - name: Analyze dead code
@@ -134,20 +134,20 @@ Cleanup potential:
 
 ## How It Works
 
-1. **Scan** — discovers all source files respecting `.gitignore` and config excludes; auto-detects languages from file extensions
-2. **Parse** — each language plugin extracts symbol definitions and references
-3. **Graph** — builds a cross-file reference graph (nodes = symbols, edges = usages)
-4. **Detect** — symbols with zero cross-file references are flagged as dead
-5. **Stats** — calculates cleanup potential: estimated line count, breakdown by kind
-6. **Report** — results in your chosen format
+1. **Scan** - discovers all source files respecting `.gitignore` and config excludes; auto-detects languages from file extensions
+2. **Parse** - each language plugin extracts symbol definitions and references
+3. **Graph** - builds a cross-file reference graph (nodes = symbols, edges = usages)
+4. **Detect** - symbols with zero cross-file references are flagged as dead
+5. **Stats** - calculates cleanup potential: estimated line count, breakdown by kind
+6. **Report** - results in your chosen format
 
-Entry-point files (`index.ts`, `main.go`, etc.) are treated as public API boundaries — their exports are not flagged unless they're also unreferenced by other consumers.
+Entry-point files (`index.ts`, `main.go`, etc.) are treated as public API boundaries - their exports are not flagged unless they're also unreferenced by other consumers.
 
 ---
 
 ## Contributing
 
-We welcome contributions — especially new language plugins! Each language is a single ~60-line file.
+We welcome contributions - especially new language plugins! Each language is a single ~60-line file.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup instructions, the plugin API, and the PR process.
 

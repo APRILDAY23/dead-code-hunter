@@ -16,7 +16,7 @@
 - [ ] Target branch is `develop` (not `main`)
 - [ ] `npm run build` passes locally
 - [ ] TypeScript compiles with no errors (`npm run lint`)
-- [ ] If adding a language plugin — tested against a real project in that language
+- [ ] If adding a language plugin - tested against a real project in that language
 - [ ] No API keys, secrets, or tokens committed
 
 ## Language plugin (if applicable)

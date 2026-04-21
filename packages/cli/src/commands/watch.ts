@@ -13,7 +13,7 @@ export async function watchCommand(dir: string | undefined): Promise<void> {
       const result = await analyze(rootDir);
       process.stdout.write(consoleReport(result, rootDir));
       if (result.deadSymbols.length > 0) {
-        process.stderr.write(chalk.yellow(`\nFound ${chalk.bold(String(result.deadSymbols.length))} dead symbol(s) in ${result.scannedFiles} files — ${result.durationMs}ms\n`));
+        process.stderr.write(chalk.yellow(`\nFound ${chalk.bold(String(result.deadSymbols.length))} dead symbol(s) in ${result.scannedFiles} files - ${result.durationMs}ms\n`));
       } else {
         process.stderr.write(chalk.green('\nNo dead code found!\n'));
       }

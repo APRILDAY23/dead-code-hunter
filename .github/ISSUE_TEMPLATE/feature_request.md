@@ -20,7 +20,7 @@ assignees: ''
 
 ## Is this a new language plugin?
 
-- [ ] Yes — language: ___________  file extensions: ___________
+- [ ] Yes - language: ___________  file extensions: ___________
 - [ ] No
 
 ## Additional context

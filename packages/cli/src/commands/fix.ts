@@ -82,5 +82,5 @@ export async function fixCommand(dir: string | undefined): Promise<void> {
   }
 
   rl.close();
-  process.stderr.write(chalk.bold(`\nDone — fixed: ${fixed}, skipped: ${skipped}\n`));
+  process.stderr.write(chalk.bold(`\nDone - fixed: ${fixed}, skipped: ${skipped}\n`));
 }

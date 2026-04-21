@@ -47,7 +47,7 @@ jobs:
 
           # Skip if this version already exists on npm
           if npm view dead-code-hunter@$NEW version 2>/dev/null | grep -q "$NEW"; then
-            echo "Version $NEW already published — skipping"
+            echo "Version $NEW already published - skipping"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
