@@ -2,14 +2,30 @@
   "name": "vscode-dead-code-hunter",
   "displayName": "Dead Code Hunter",
   "description": "Find unused functions, classes, variables and more across JS/TS, Python, Go, Java, Ruby, Rust, PHP, and C#",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "publisher": "VedaMoola",
   "icon": "media/icon.png",
-  "repository": { "type": "git", "url": "https://github.com/APRILDAY23/dead-code-hunter" },
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Linters", "Other"],
-  "keywords": ["dead code", "unused", "cleanup", "refactor", "linter"],
-  "activationEvents": ["onStartupFinished"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/APRILDAY23/dead-code-hunter"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "dead code",
+    "unused",
+    "cleanup",
+    "refactor",
+    "linter"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -102,12 +118,27 @@
         },
         "deadCodeHunter.languages": {
           "type": "array",
-          "default": ["typescript", "javascript", "python", "go", "java", "ruby", "rust", "php", "csharp"],
+          "default": [
+            "typescript",
+            "javascript",
+            "python",
+            "go",
+            "java",
+            "ruby",
+            "rust",
+            "php",
+            "csharp"
+          ],
           "description": "Languages to include in analysis"
         },
         "deadCodeHunter.severity": {
           "type": "string",
-          "enum": ["error", "warning", "information", "hint"],
+          "enum": [
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
           "default": "hint",
           "description": "Diagnostic severity for dead code"
         }

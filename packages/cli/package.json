@@ -1,8 +1,10 @@
 {
   "name": "dead-code-hunter",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "CLI tool to find dead code across your entire project — JS/TS, Python, Go, Java, Ruby, Rust, PHP, C#",
-  "bin": { "dch": "dist/index.js" },
+  "bin": {
+    "dch": "dist/index.js"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
