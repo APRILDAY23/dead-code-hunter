@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+*.vsix
+.changeset/
+coverage/
+*.js.map
+*.d.ts
+!src/**/*.d.ts

@@ -1,0 +1,9 @@
+# All files require owner review by default
+* @APRILDAY23
+
+# CI/CD and secrets — locked to owner only
+/.github/workflows/   @APRILDAY23
+/.github/CODEOWNERS   @APRILDAY23
+
+# Core engine — requires extra scrutiny
+/packages/core/       @APRILDAY23

@@ -1,0 +1,66 @@
+name: Update Contributors
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+permissions:
+  contents: write
+
+jobs:
+  update-contributors:
+    name: Refresh contributor list in README
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Fetch contributors and update README
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import subprocess, json, re
+
+          result = subprocess.run(
+            ["gh", "api", "repos/${{ github.repository }}/contributors", "--paginate"],
+            capture_output=True, text=True, check=True
+          )
+          contributors = json.loads(result.stdout)
+
+          html = "\n"
+          for c in contributors:
+            if c.get("type") == "Bot":
+              continue
+            login = c["login"]
+            html += f'<a href="https://github.com/{login}" title="{login}">'
+            html += f'<img src="https://github.com/{login}.png" width="48" height="48" alt="{login}" style="border-radius:50%;margin:4px"/>'
+            html += f'</a>\n'
+
+          with open("README.md", "r") as f:
+            content = f.read()
+
+          updated = re.sub(
+            r"<!-- CONTRIBUTORS-START -->.*?<!-- CONTRIBUTORS-END -->",
+            f"<!-- CONTRIBUTORS-START -->{html}<!-- CONTRIBUTORS-END -->",
+            content,
+            flags=re.DOTALL
+          )
+
+          with open("README.md", "w") as f:
+            f.write(updated)
+
+          print(f"Updated {len([c for c in contributors if c.get('type') != 'Bot'])} contributors")
+          EOF
+
+      - name: Commit updated README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || git commit -m "docs: update contributors [skip ci]"
+          git push

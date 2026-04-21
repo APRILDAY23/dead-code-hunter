@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish to npm + VS Code Marketplace
+    runs-on: ubuntu-latest
+
+    # Only the repo owner can trigger releases
+    if: github.actor == 'APRILDAY23'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all packages
+        run: npm run build --workspaces --if-present
+
+      # ── Extract version from tag ─────────────────────────────────────────────
+      - name: Extract version
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "$TAG" == *"-"* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Sync versions across all packages ───────────────────────────────────
+      - name: Bump package versions
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          npm version "$VERSION" --no-git-tag-version --workspace packages/core
+          npm version "$VERSION" --no-git-tag-version --workspace packages/cli
+          npm version "$VERSION" --no-git-tag-version --workspace packages/vscode
+
+      # ── Publish @dead-code-hunter/core to npm ───────────────────────────────
+      - name: Publish core to npm
+        run: npm publish --workspace packages/core --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ── Publish dead-code-hunter CLI to npm ─────────────────────────────────
+      - name: Publish CLI to npm
+        run: npm publish --workspace packages/cli --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ── Package VS Code extension ────────────────────────────────────────────
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Package VS Code extension
+        working-directory: packages/vscode
+        run: vsce package --out ../../dead-code-hunter-${{ steps.version.outputs.version }}.vsix
+
+      # ── Publish to VS Code Marketplace ──────────────────────────────────────
+      - name: Publish to VS Code Marketplace
+        working-directory: packages/vscode
+        run: vsce publish --pat ${{ secrets.VSCE_PAT }}
+        # Skip pre-releases on the marketplace (or use --pre-release flag)
+        if: steps.version.outputs.prerelease == 'false'
+
+      - name: Publish pre-release to VS Code Marketplace
+        working-directory: packages/vscode
+        run: vsce publish --pat ${{ secrets.VSCE_PAT }} --pre-release
+        if: steps.version.outputs.prerelease == 'true'
+
+      # ── Also publish to Open VSX (VSCodium / Gitpod / Theia) ────────────────
+      - name: Publish to Open VSX Registry
+        working-directory: packages/vscode
+        run: npx ovsx publish ../../dead-code-hunter-${{ steps.version.outputs.version }}.vsix -p ${{ secrets.OPEN_VSX_TOKEN }}
+        continue-on-error: true   # don't fail release if Open VSX is down
+
+      # ── Create GitHub Release ────────────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Dead Code Hunter ${{ steps.version.outputs.tag }}"
+          generate_release_notes: true
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          files: |
+            dead-code-hunter-${{ steps.version.outputs.version }}.vsix
+          body: |
+            ## Install
+
+            **VS Code Extension** — auto-updates via the Marketplace.
+            Or install manually: `code --install-extension dead-code-hunter-${{ steps.version.outputs.version }}.vsix`
+
+            **CLI**
+            ```bash
+            npm install -g dead-code-hunter@${{ steps.version.outputs.version }}
+            ```
+
+            ---
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.

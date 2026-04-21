@@ -1,0 +1,131 @@
+{
+  "name": "vscode-dead-code-hunter",
+  "displayName": "Dead Code Hunter",
+  "description": "Find unused functions, classes, variables and more across JS/TS, Python, Go, Java, Ruby, Rust, PHP, and C#",
+  "version": "1.0.0",
+  "publisher": "VedaMoola",
+  "icon": "media/icon.png",
+  "repository": { "type": "git", "url": "https://github.com/APRILDAY23/dead-code-hunter" },
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters", "Other"],
+  "keywords": ["dead code", "unused", "cleanup", "refactor", "linter"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "deadCodeHunter.analyze",
+        "title": "Analyze Workspace",
+        "category": "Dead Code Hunter",
+        "icon": "$(search)"
+      },
+      {
+        "command": "deadCodeHunter.analyzeFile",
+        "title": "Analyze Current File",
+        "category": "Dead Code Hunter"
+      },
+      {
+        "command": "deadCodeHunter.showGraph",
+        "title": "Show Dependency Graph",
+        "category": "Dead Code Hunter",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "deadCodeHunter.clear",
+        "title": "Clear Results",
+        "category": "Dead Code Hunter",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "deadCodeHunter.exportReport",
+        "title": "Export HTML Report",
+        "category": "Dead Code Hunter",
+        "icon": "$(export)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "deadCodeHunter",
+          "title": "Dead Code Hunter",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "deadCodeHunter": [
+        {
+          "id": "deadCodeHunter.results",
+          "name": "Dead Symbols",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "deadCodeHunter.analyze",
+          "when": "view == deadCodeHunter.results",
+          "group": "navigation@1"
+        },
+        {
+          "command": "deadCodeHunter.showGraph",
+          "when": "view == deadCodeHunter.results",
+          "group": "navigation@2"
+        },
+        {
+          "command": "deadCodeHunter.clear",
+          "when": "view == deadCodeHunter.results",
+          "group": "navigation@3"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "deadCodeHunter.analyzeFile",
+          "when": "editorIsOpen",
+          "group": "deadCodeHunter"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Dead Code Hunter",
+      "properties": {
+        "deadCodeHunter.analyzeOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically re-analyze when a file is saved"
+        },
+        "deadCodeHunter.analyzeOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run analysis when workspace opens"
+        },
+        "deadCodeHunter.languages": {
+          "type": "array",
+          "default": ["typescript", "javascript", "python", "go", "java", "ruby", "rust", "php", "csharp"],
+          "description": "Languages to include in analysis"
+        },
+        "deadCodeHunter.severity": {
+          "type": "string",
+          "enum": ["error", "warning", "information", "hint"],
+          "default": "hint",
+          "description": "Diagnostic severity for dead code"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "@dead-code-hunter/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.26.0"
+  }
+}
