@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import type { AnalysisResult, DeadSymbol } from '@dead-code-hunter/core';
+import type { AnalysisResult, DeadSymbol } from 'dead-code-hunter-core';
 
 export class DeadCodeTreeProvider implements vscode.TreeDataProvider<TreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<TreeItem | undefined | null | void>();

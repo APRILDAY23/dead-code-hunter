@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
-import { analyze, consoleReport, jsonReport, htmlReport, sarifReport } from '@dead-code-hunter/core';
+import { analyze, consoleReport, jsonReport, htmlReport, sarifReport } from 'dead-code-hunter-core';
 
 const program = new Command();
 

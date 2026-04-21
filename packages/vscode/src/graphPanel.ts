@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import type { AnalysisResult } from '@dead-code-hunter/core';
+import type { AnalysisResult } from 'dead-code-hunter-core';
 
 export class GraphPanel {
   static currentPanel: GraphPanel | undefined;

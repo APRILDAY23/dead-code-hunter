@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { analyze, htmlReport } from '@dead-code-hunter/core';
-import type { AnalysisResult } from '@dead-code-hunter/core';
+import { analyze, htmlReport } from 'dead-code-hunter-core';
+import type { AnalysisResult } from 'dead-code-hunter-core';
 import { DeadCodeTreeProvider } from './treeview';
 import { GraphPanel } from './graphPanel';
 
