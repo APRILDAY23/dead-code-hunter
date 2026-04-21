@@ -1,6 +1,6 @@
 {
   "name": "dead-code-hunter",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Find and eliminate unused code across your entire project - JS/TS, Python, Go, Java, Ruby, Rust, PHP, C#",
   "bin": {
     "dch": "dist/index.js"
