@@ -1,6 +1,6 @@
 {
   "name": "dead-code-hunter-core",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Core analysis engine for dead code detection - JS/TS, Python, Go, Java, Ruby, Rust, PHP, C#",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
