@@ -145,4 +145,9 @@ program
     console.log(chalk.green('Created .dchrc.json'));
   });
 
+if (process.argv.length === 2) {
+  program.outputHelp();
+  process.exit(0);
+}
+
 program.parse();
