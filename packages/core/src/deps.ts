@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { glob } from 'glob';
+import fg from 'fast-glob';
 import type { DeadDependency, DepsResult } from './types';
 
 interface PackageManifest {
@@ -160,8 +160,8 @@ export async function analyzeDeps(rootDir: string): Promise<DepsResult> {
   }
 
   // Gather all source files
-  const files = await glob('**/*', {
-    cwd: rootDir, absolute: true, nodir: true,
+  const files = await fg('**/*', {
+    cwd: rootDir, absolute: true, onlyFiles: true,
     ignore: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.git/**', '**/vendor/**'],
   });
 

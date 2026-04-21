@@ -12,8 +12,6 @@ jobs:
   release:
     name: Publish to npm + GitHub Release
     runs-on: ubuntu-latest
-
-    # Only runs when APRILDAY23 pushes to develop
     if: github.actor == 'APRILDAY23'
 
     steps:
@@ -33,31 +31,53 @@ jobs:
         run: npm ci
 
       - name: Build all packages
-        run: npm run build
+        run: |
+          npm run build --workspace packages/core
+          npm run build --workspace packages/cli
 
-      # ── Auto-bump patch version from latest git tag ─────────────────────────
-      - name: Bump version
+      # ── Compute next version from latest git tag ─────────────────────────────
+      - name: Compute version
         id: version
         run: |
-          # Get latest tag, fall back to v1.0.0 if none exist
           LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
           LATEST=${LATEST:-v1.0.0}
           CURRENT="${LATEST#v}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
           NEW="$MAJOR.$MINOR.$((PATCH + 1))"
+
+          # Skip if this version already exists on npm
+          if npm view dead-code-hunter@$NEW version 2>/dev/null | grep -q "$NEW"; then
+            echo "Version $NEW already published — skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           echo "version=$NEW" >> "$GITHUB_OUTPUT"
           echo "tag=v$NEW" >> "$GITHUB_OUTPUT"
-          echo "Bumped $CURRENT → $NEW"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
-          # Update all package.json versions
           npm version "$NEW" --no-git-tag-version --workspace packages/core
           npm version "$NEW" --no-git-tag-version --workspace packages/cli
           npm version "$NEW" --no-git-tag-version --workspace packages/vscode
 
           echo "Bumped $CURRENT → $NEW"
 
-      # ── Commit version bump back to develop ─────────────────────────────────
+      # ── Publish to npm FIRST (tag only created on success) ───────────────────
+      - name: Publish core to npm
+        if: steps.version.outputs.skip != 'true'
+        run: npm publish --workspace packages/core --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish CLI to npm
+        if: steps.version.outputs.skip != 'true'
+        run: npm publish --workspace packages/cli --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ── Commit version bump + tag (only after successful publish) ────────────
       - name: Commit & tag version bump
+        if: steps.version.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -66,21 +86,9 @@ jobs:
           git tag ${{ steps.version.outputs.tag }}
           git push origin develop --follow-tags
 
-      # ── Publish to npm ───────────────────────────────────────────────────────
-      - name: Publish core to npm
-        run: npm publish --workspace packages/core --access public
-        continue-on-error: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish CLI to npm
-        run: npm publish --workspace packages/cli --access public
-        continue-on-error: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # ── Create GitHub Release ────────────────────────────────────────────────
+      # ── GitHub Release ────────────────────────────────────────────────────────
       - name: Create GitHub Release
+        if: steps.version.outputs.skip != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
@@ -98,6 +106,3 @@ jobs:
             ```bash
             npx dead-code-hunter@${{ steps.version.outputs.version }} analyze
             ```
-
-            ---
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
