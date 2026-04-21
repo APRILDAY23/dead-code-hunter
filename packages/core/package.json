@@ -1,7 +1,7 @@
 {
-  "name": "@dead-code-hunter/core",
+  "name": "dead-code-hunter-core",
   "version": "1.0.5",
-  "description": "Core analysis engine for dead code detection across multiple languages",
+  "description": "Core analysis engine for dead code detection — JS/TS, Python, Go, Java, Ruby, Rust, PHP, C#",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -16,5 +16,20 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.0"
-  }
+  },
+  "license": "MIT",
+  "keywords": [
+    "dead code",
+    "static analysis",
+    "typescript",
+    "python",
+    "go",
+    "linter"
+  ],
+  "homepage": "https://github.com/APRILDAY23/dead-code-hunter",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/APRILDAY23/dead-code-hunter.git"
+  },
+  "author": "Veda Moola <vedamoola@gmail.com>"
 }
