@@ -16,6 +16,8 @@ export const javaPlugin: LanguagePlugin = {
     const callRe = /\b([a-zA-Z_]\w*)\s*\(/g;
     const identRe = /\b([a-zA-Z_]\w*)\b/g;
 
+    const hasDchIgnore = (ln: number) => ln > 1 && /\/\/\s*dch-ignore/.test(lines[ln - 2].trim());
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       const lineNum = i + 1;
@@ -23,19 +25,19 @@ export const javaPlugin: LanguagePlugin = {
       const classMatch = classRe.exec(line);
       if (classMatch) {
         const exported = line.includes('public');
-        definitions.push({ name: classMatch[1], kind: 'class', file: filePath, line: lineNum, column: 0, exported });
+        definitions.push({ name: classMatch[1], kind: 'class', file: filePath, line: lineNum, column: 0, exported, ignored: hasDchIgnore(lineNum) });
         continue;
       }
 
       const ifaceMatch = interfaceRe.exec(line);
       if (ifaceMatch) {
-        definitions.push({ name: ifaceMatch[1], kind: 'interface', file: filePath, line: lineNum, column: 0, exported: line.includes('public') });
+        definitions.push({ name: ifaceMatch[1], kind: 'interface', file: filePath, line: lineNum, column: 0, exported: line.includes('public'), ignored: hasDchIgnore(lineNum) });
         continue;
       }
 
       const enumMatch = enumRe.exec(line);
       if (enumMatch) {
-        definitions.push({ name: enumMatch[1], kind: 'enum', file: filePath, line: lineNum, column: 0, exported: line.includes('public') });
+        definitions.push({ name: enumMatch[1], kind: 'enum', file: filePath, line: lineNum, column: 0, exported: line.includes('public'), ignored: hasDchIgnore(lineNum) });
         continue;
       }
 
@@ -49,6 +51,7 @@ export const javaPlugin: LanguagePlugin = {
             line: lineNum,
             column: 0,
             exported: line.includes('public'),
+            ignored: hasDchIgnore(lineNum),
           });
         }
       }

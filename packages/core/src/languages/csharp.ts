@@ -17,6 +17,8 @@ export const csharpPlugin: LanguagePlugin = {
     const callRe = /\b([a-zA-Z_]\w*)\s*\(/g;
     const identRe = /\b([a-zA-Z_]\w*)\b/g;
 
+    const hasDchIgnore = (ln: number) => ln > 1 && /\/\/\s*dch-ignore/.test(lines[ln - 2].trim());
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       const lineNum = i + 1;
@@ -25,27 +27,27 @@ export const csharpPlugin: LanguagePlugin = {
 
       const classMatch = classRe.exec(line);
       if (classMatch) {
-        definitions.push({ name: classMatch[1], kind: 'class', file: filePath, line: lineNum, column: 0, exported: line.includes('public') });
+        definitions.push({ name: classMatch[1], kind: 'class', file: filePath, line: lineNum, column: 0, exported: line.includes('public'), ignored: hasDchIgnore(lineNum) });
         continue;
       }
       const ifaceMatch = interfaceRe.exec(line);
       if (ifaceMatch) {
-        definitions.push({ name: ifaceMatch[1], kind: 'interface', file: filePath, line: lineNum, column: 0, exported: true });
+        definitions.push({ name: ifaceMatch[1], kind: 'interface', file: filePath, line: lineNum, column: 0, exported: true, ignored: hasDchIgnore(lineNum) });
         continue;
       }
       const enumMatch = enumRe.exec(line);
       if (enumMatch) {
-        definitions.push({ name: enumMatch[1], kind: 'enum', file: filePath, line: lineNum, column: 0, exported: line.includes('public') });
+        definitions.push({ name: enumMatch[1], kind: 'enum', file: filePath, line: lineNum, column: 0, exported: line.includes('public'), ignored: hasDchIgnore(lineNum) });
         continue;
       }
       const methodMatch = methodRe.exec(line);
       if (methodMatch && !['if', 'while', 'for', 'foreach', 'switch', 'catch', 'using', 'lock'].includes(methodMatch[1])) {
-        definitions.push({ name: methodMatch[1], kind: 'method', file: filePath, line: lineNum, column: 0, exported: line.includes('public') });
+        definitions.push({ name: methodMatch[1], kind: 'method', file: filePath, line: lineNum, column: 0, exported: line.includes('public'), ignored: hasDchIgnore(lineNum) });
         continue;
       }
       const propMatch = propRe.exec(line);
       if (propMatch) {
-        definitions.push({ name: propMatch[1], kind: 'variable', file: filePath, line: lineNum, column: 0, exported: line.includes('public') });
+        definitions.push({ name: propMatch[1], kind: 'variable', file: filePath, line: lineNum, column: 0, exported: line.includes('public'), ignored: hasDchIgnore(lineNum) });
         continue;
       }
 

@@ -37,8 +37,9 @@ export class SymbolGraph {
     for (const [, node] of this.nodes) {
       const { definition, referencedBy } = node;
 
-      // Skip symbols matching ignore patterns
+      // Skip symbols matching ignore patterns or marked with dch-ignore
       if (ignoreRegexes.some(r => r.test(definition.name))) continue;
+      if (definition.ignored) continue;
 
       // Exported symbols in entry point files are public API — not dead
       if (definition.exported && entryFiles.has(definition.file)) continue;

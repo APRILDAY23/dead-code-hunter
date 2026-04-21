@@ -18,6 +18,8 @@ export const pythonPlugin: LanguagePlugin = {
     // Detect if module-level __all__ is defined (marks public API)
     const hasAll = /__all__\s*=/.test(content);
 
+    const hasDchIgnore = (ln: number) => ln > 1 && /#\s*dch-ignore/.test(lines[ln - 2]);
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const lineNum = i + 1;
@@ -33,6 +35,7 @@ export const pythonPlugin: LanguagePlugin = {
           line: lineNum,
           column: indent,
           exported: !name.startsWith('_') && !hasAll,
+          ignored: hasDchIgnore(lineNum),
         });
         continue;
       }
@@ -48,6 +51,7 @@ export const pythonPlugin: LanguagePlugin = {
           line: lineNum,
           column: indent,
           exported: !name.startsWith('_'),
+          ignored: hasDchIgnore(lineNum),
         });
         continue;
       }
@@ -57,7 +61,7 @@ export const pythonPlugin: LanguagePlugin = {
       if (assignMatch && !line.startsWith(' ')) {
         const name = assignMatch[1];
         if (name !== '__all__' && name !== '__name__' && !name.startsWith('_')) {
-          definitions.push({ name, kind: 'variable', file: filePath, line: lineNum, column: 0, exported: true });
+          definitions.push({ name, kind: 'variable', file: filePath, line: lineNum, column: 0, exported: true, ignored: hasDchIgnore(lineNum) });
         }
       }
 
