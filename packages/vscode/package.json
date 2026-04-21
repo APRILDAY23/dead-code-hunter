@@ -2,7 +2,7 @@
   "name": "vscode-dead-code-hunter",
   "displayName": "Dead Code Hunter",
   "description": "Find unused functions, classes, variables and more across JS/TS, Python, Go, Java, Ruby, Rust, PHP, and C#",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "publisher": "VedaMoola",
   "icon": "media/icon.png",
   "repository": {
