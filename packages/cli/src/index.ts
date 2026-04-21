@@ -15,6 +15,10 @@ import { unreachableCommand } from './commands/unreachable';
 import { catchesCommand } from './commands/catches';
 import { configKeysCommand } from './commands/configkeys';
 import { scanCommand } from './commands/scan';
+import { consoleCommand } from './commands/console';
+import { complexityCommand } from './commands/complexity';
+import { circularCommand } from './commands/circular';
+import { secretsCommand } from './commands/secrets';
 
 const program = new Command();
 
@@ -188,6 +192,60 @@ Subcommands:
   .action(async (subcommand, dir, options) => {
     try { await baselineCommand(subcommand, dir, options); }
     catch (err) { console.error(chalk.red('Baseline failed:'), err); process.exit(1); }
+  });
+
+// ── console ───────────────────────────────────────────────────────────────────
+
+program
+  .command('console [dir]')
+  .description('Find console.log / print / fmt.Println debug statements left in source code')
+  .option('-f, --format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write results to a file')
+  .option('--include-tests', 'Include test files (excluded by default)')
+  .option('--fail-on-any', 'Exit with code 1 if any debug statements are found')
+  .action(async (dir, options) => {
+    try { await consoleCommand(dir, options); }
+    catch (err) { console.error(chalk.red('Console check failed:'), err); process.exit(1); }
+  });
+
+// ── complexity ────────────────────────────────────────────────────────────────
+
+program
+  .command('complexity [dir]')
+  .description('Find functions with high cyclomatic complexity that are hard to maintain')
+  .option('-f, --format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write results to a file')
+  .option('--threshold <n>', 'Minimum complexity to report (default: 5)', '5')
+  .option('--fail-on-high', 'Exit with code 1 if any high/critical functions are found')
+  .action(async (dir, options) => {
+    try { await complexityCommand(dir, options); }
+    catch (err) { console.error(chalk.red('Complexity check failed:'), err); process.exit(1); }
+  });
+
+// ── circular ──────────────────────────────────────────────────────────────────
+
+program
+  .command('circular [dir]')
+  .description('Find circular import chains between files (JS, TS, Python)')
+  .option('-f, --format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write results to a file')
+  .option('--fail-on-any', 'Exit with code 1 if any circular imports are found')
+  .action(async (dir, options) => {
+    try { await circularCommand(dir, options); }
+    catch (err) { console.error(chalk.red('Circular check failed:'), err); process.exit(1); }
+  });
+
+// ── secrets ───────────────────────────────────────────────────────────────────
+
+program
+  .command('secrets [dir]')
+  .description('Detect hardcoded API keys, passwords and tokens in source code')
+  .option('-f, --format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write results to a file')
+  .option('--fail-on-any', 'Exit with code 1 if any secrets are found')
+  .action(async (dir, options) => {
+    try { await secretsCommand(dir, options); }
+    catch (err) { console.error(chalk.red('Secrets check failed:'), err); process.exit(1); }
   });
 
 // ── scan ──────────────────────────────────────────────────────────────────────
