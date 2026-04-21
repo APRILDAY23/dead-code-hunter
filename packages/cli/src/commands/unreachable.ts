@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 
+const SEV_COLOR = { error: chalk.red, warning: chalk.yellow };
+const SEV_ICON = { error: '✖', warning: '⚠' };
+
 export async function unreachableCommand(
   dir: string | undefined,
   options: { format?: string; output?: string; failOnAny?: boolean },
@@ -21,14 +24,28 @@ export async function unreachableCommand(
     if (result.unreachableCode.length === 0) {
       lines.push(chalk.green('No unreachable code found!'));
     } else {
+      const errors = result.unreachableCode.filter(b => b.severity === 'error');
+      const warnings = result.unreachableCode.filter(b => b.severity === 'warning');
+
       for (const block of result.unreachableCode) {
         const rel = path.relative(rootDir, block.file);
+        const colorFn = SEV_COLOR[block.severity];
+        const icon = SEV_ICON[block.severity];
+
         lines.push(
-          chalk.red('unreachable') + ' ' + chalk.cyan(rel) + ':' + chalk.yellow(String(block.unreachableLine)),
+          `${colorFn(icon)} ${chalk.cyan(rel)}:${chalk.yellow(String(block.unreachableLine))}-${chalk.yellow(String(block.unreachableEnd))}`,
         );
-        lines.push(chalk.dim(`  after: ${block.terminatorText} (line ${block.terminatorLine})`));
-        lines.push(chalk.dim(`  dead:  ${block.unreachableText}`));
+        lines.push(chalk.dim(`  terminator (line ${block.terminatorLine}): ${block.terminatorText}`));
+        lines.push(chalk.dim('  dead code:'));
+        for (const dl of block.unreachableLines) {
+          lines.push(chalk.dim(`    ${dl}`));
+        }
+        lines.push('');
       }
+
+      lines.push(chalk.bold('Severity breakdown:'));
+      if (errors.length > 0) lines.push(`  ${chalk.red(('error:').padEnd(10))} ${errors.length}`);
+      if (warnings.length > 0) lines.push(`  ${chalk.yellow(('warning:').padEnd(10))} ${warnings.length}`);
     }
     output = lines.join('\n') + '\n';
   }

@@ -14,6 +14,7 @@ import { dupesCommand } from './commands/dupes';
 import { unreachableCommand } from './commands/unreachable';
 import { catchesCommand } from './commands/catches';
 import { configKeysCommand } from './commands/configkeys';
+import { scanCommand } from './commands/scan';
 
 const program = new Command();
 
@@ -80,6 +81,7 @@ program
   .option('-f, --format <format>', 'Output format: text | json', 'text')
   .option('-o, --output <file>', 'Write results to a file')
   .option('--older-than <days>', 'Only show comments older than N days')
+  .option('--author <name>', 'Filter by author name or email (partial match)')
   .option('--fail-on-any', 'Exit with code 1 if any stale comments are found')
   .action(async (dir, options) => {
     try { await todosCommand(dir, options); }
@@ -186,6 +188,19 @@ Subcommands:
   .action(async (subcommand, dir, options) => {
     try { await baselineCommand(subcommand, dir, options); }
     catch (err) { console.error(chalk.red('Baseline failed:'), err); process.exit(1); }
+  });
+
+// ── scan ──────────────────────────────────────────────────────────────────────
+
+program
+  .command('scan [dir]')
+  .description('Run all checks at once and display a dashboard summary')
+  .option('-f, --format <format>', 'Output format: text | json', 'text')
+  .option('-o, --output <file>', 'Write results to a file')
+  .option('--fail-on-any', 'Exit with code 1 if any issue is found')
+  .action(async (dir, options) => {
+    try { await scanCommand(dir, options); }
+    catch (err) { console.error(chalk.red('Scan failed:'), err); process.exit(1); }
   });
 
 // ── init ──────────────────────────────────────────────────────────────────────
