@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - develop
 
 permissions:
   contents: write
@@ -13,10 +13,14 @@ jobs:
     name: Publish to npm + GitHub Release
     runs-on: ubuntu-latest
 
+    # Only runs when APRILDAY23 pushes to develop
+    if: github.actor == 'APRILDAY23'
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,28 +35,34 @@ jobs:
       - name: Build all packages
         run: npm run build
 
-      # ── Extract version from tag ─────────────────────────────────────────────
-      - name: Extract version
+      # ── Auto-bump patch version ──────────────────────────────────────────────
+      - name: Bump version
         id: version
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          VERSION="${TAG#v}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if [[ "$TAG" == *"-"* ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-          fi
+          CURRENT=$(node -p "require('./packages/cli/package.json').version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          NEW="$MAJOR.$MINOR.$((PATCH + 1))"
+          echo "version=$NEW" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW" >> "$GITHUB_OUTPUT"
 
-      # ── Sync versions across all packages ───────────────────────────────────
-      - name: Bump package versions
+          # Update all package.json versions
+          npm version "$NEW" --no-git-tag-version --workspace packages/core
+          npm version "$NEW" --no-git-tag-version --workspace packages/cli
+          npm version "$NEW" --no-git-tag-version --workspace packages/vscode
+
+          echo "Bumped $CURRENT → $NEW"
+
+      # ── Commit version bump back to develop ─────────────────────────────────
+      - name: Commit & tag version bump
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-          npm version "$VERSION" --no-git-tag-version --workspace packages/core
-          npm version "$VERSION" --no-git-tag-version --workspace packages/cli
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/*/package.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin develop --follow-tags
 
-      # ── Publish to npm (non-blocking so GitHub Release always runs) ──────────
+      # ── Publish to npm ───────────────────────────────────────────────────────
       - name: Publish core to npm
         run: npm publish --workspace packages/core --access public
         continue-on-error: true
@@ -72,7 +82,6 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: "Dead Code Hunter ${{ steps.version.outputs.tag }}"
           generate_release_notes: true
-          prerelease: ${{ steps.version.outputs.prerelease }}
           body: |
             ## Install
 
