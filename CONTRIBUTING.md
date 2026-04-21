@@ -9,12 +9,10 @@ Thanks for your interest in contributing! This guide covers everything you need 
 - [Project structure](#project-structure)
 - [Development setup](#development-setup)
 - [Running locally](#running-locally)
-- [Testing the VS Code extension](#testing-the-vs-code-extension)
 - [Adding a language plugin](#adding-a-language-plugin)
 - [Branching strategy](#branching-strategy)
 - [Submitting a PR](#submitting-a-pr)
 - [Release process](#release-process)
-- [Secrets management](#secrets-management)
 
 ---
 
@@ -30,10 +28,9 @@ dead-code-hunter/
 │   │       ├── analyzer.ts    # Orchestrates scanning + graph
 │   │       ├── graph.ts       # Cross-file symbol reference graph
 │   │       └── scanner.ts     # File discovery + .gitignore support
-│   ├── cli/           # dead-code-hunter — the `dch` CLI tool
-│   └── vscode/        # vscode-dead-code-hunter — VS Code extension
+│   └── cli/           # dead-code-hunter — the `dch` CLI tool
 ├── .github/
-│   ├── workflows/     # CI, release, contributors automation
+│   ├── workflows/     # CI and release automation
 │   ├── ISSUE_TEMPLATE/
 │   └── pull_request_template.md
 ├── CONTRIBUTING.md    # ← you are here
@@ -45,7 +42,7 @@ dead-code-hunter/
 
 ## Development setup
 
-**Prerequisites:** Node.js 18+, npm 9+, Git, VS Code (for extension work)
+**Prerequisites:** Node.js 18+, npm 9+, Git
 
 ```bash
 # 1. Fork the repo on GitHub, then clone your fork
@@ -66,8 +63,6 @@ node packages/cli/dist/index.js analyze .
 
 ## Running locally
 
-### CLI (watch mode)
-
 ```bash
 # Terminal 1 — rebuild core on changes
 cd packages/core && npm run dev
@@ -87,40 +82,13 @@ node packages/cli/dist/index.js analyze --help
 
 ---
 
-## Testing the VS Code extension
-
-The extension runs in an **Extension Development Host** — a sandboxed VS Code window that loads your local build.
-
-```bash
-# 1. Build the extension
-cd packages/vscode && npm run dev   # watch mode
-
-# 2. Open the project root in VS Code
-code .
-
-# 3. Press F5  (or Run → Start Debugging)
-#    This opens a new VS Code window with the extension loaded
-
-# 4. In that new window:
-#    - Open a project folder
-#    - Open the Command Palette (Ctrl+Shift+P)
-#    - Run: "Dead Code Hunter: Analyze Workspace"
-#    - Check the sidebar panel and inline diagnostics
-```
-
-**To see the graph panel:**
-- After running analysis, click the graph icon in the Dead Code Hunter sidebar
-- Or run: "Dead Code Hunter: Show Dependency Graph"
-
----
-
 ## Adding a language plugin
 
 Each language is a single file in `packages/core/src/languages/`. Adding a new one takes about 30–60 minutes.
 
 ### Step 1 — Create the plugin file
 
-Copy an existing simple plugin (e.g. `ruby.ts`) as a starting point:
+Copy an existing simple plugin as a starting point:
 
 ```bash
 cp packages/core/src/languages/ruby.ts packages/core/src/languages/kotlin.ts
@@ -134,7 +102,7 @@ Your plugin must export a `LanguagePlugin` object:
 import type { LanguagePlugin, Definition, Reference } from '../types';
 
 export const kotlinPlugin: LanguagePlugin = {
-  extensions: ['.kt', '.kts'],   // file extensions this plugin handles
+  extensions: ['.kt', '.kts'],
   language: 'kotlin',
 
   analyze(filePath: string, content: string) {
@@ -146,20 +114,18 @@ export const kotlinPlugin: LanguagePlugin = {
       const line = lines[i];
       const lineNum = i + 1;
 
-      // Extract definitions (functions, classes, etc.)
-      const fnMatch = /^\s*(?:fun)\s+([a-zA-Z_]\w*)/.exec(line);
+      const fnMatch = /^\s*fun\s+([a-zA-Z_]\w*)/.exec(line);
       if (fnMatch) {
         definitions.push({
           name: fnMatch[1],
-          kind: 'function',       // 'function' | 'class' | 'method' | 'variable' | etc.
+          kind: 'function',   // 'function' | 'class' | 'method' | 'variable' | etc.
           file: filePath,
           line: lineNum,
           column: 0,
-          exported: !fnMatch[1].startsWith('_'),  // your language's visibility rules
+          exported: !fnMatch[1].startsWith('_'),
         });
       }
 
-      // Extract references (anything that looks like it's being used)
       const identRe = /\b([a-zA-Z_]\w*)\b/g;
       let m: RegExpExecArray | null;
       while ((m = identRe.exec(line)) !== null) {
@@ -172,50 +138,42 @@ export const kotlinPlugin: LanguagePlugin = {
 };
 ```
 
-**Definition kinds** available: `function`, `method`, `class`, `variable`, `interface`, `type`, `enum`, `struct`, `trait`, `module`
+**Definition kinds:** `function`, `method`, `class`, `variable`, `interface`, `type`, `enum`, `struct`, `trait`, `module`
 
-**Exported flag**: In each language, set `exported: true` if the symbol is publicly accessible (e.g. `public` in Java, uppercase in Go, no leading `_` in Python).
+**Exported flag:** set `true` if the symbol is publicly accessible (`public` in Java, uppercase in Go, no leading `_` in Python).
 
 ### Step 3 — Register the plugin
 
-Add it to `packages/core/src/languages/index.ts`:
+Add to `packages/core/src/languages/index.ts`:
 
 ```typescript
 import { kotlinPlugin } from './kotlin';
 
 export const ALL_PLUGINS: LanguagePlugin[] = [
   // ... existing plugins ...
-  kotlinPlugin,   // add here
+  kotlinPlugin,
 ];
 ```
 
-Also add the extensions to `LANGUAGE_EXTENSIONS` in `packages/core/src/scanner.ts`:
+Add extensions to `LANGUAGE_EXTENSIONS` in `packages/core/src/scanner.ts`:
 
 ```typescript
-const LANGUAGE_EXTENSIONS: Record<string, string[]> = {
-  // ...
-  kotlin: ['.kt', '.kts'],
-};
+kotlin: ['.kt', '.kts'],
 ```
 
-And add `'kotlin'` to the default `languages` array in `packages/core/src/config.ts`.
+Add `'kotlin'` to the default `languages` array in `packages/core/src/config.ts`.
 
 ### Step 4 — Test it
-
-Grab a real Kotlin project from GitHub (or create a small test file with some unused functions) and run:
 
 ```bash
 node packages/cli/dist/index.js analyze /path/to/kotlin/project --languages kotlin
 ```
 
-Verify:
-- Dead functions are reported
-- Functions that ARE called are not reported as dead
-- The output format looks right (`fn`, `class`, etc.)
+Verify dead functions are reported and live functions are not.
 
 ### Step 5 — Open a PR
 
-Make sure the PR description includes sample output and what project you tested against.
+Include sample output and the project you tested against in the PR description.
 
 ---
 
@@ -223,78 +181,42 @@ Make sure the PR description includes sample output and what project you tested 
 
 | Branch | Purpose | How to target |
 |--------|---------|---------------|
-| `main` | Stable, released code | Never directly — merge from `develop` only |
+| `main` | Stable, released code | Never directly |
 | `develop` | Active development | **Target all PRs here** |
 | `feature/xyz` | Your work | Branch from `develop`, PR back to `develop` |
 
 ```bash
-# Start a new feature
 git checkout develop
 git pull origin develop
 git checkout -b feature/add-kotlin-plugin
-
 # ... make changes ...
-
 git push origin feature/add-kotlin-plugin
-# Then open PR on GitHub targeting develop
+# Open PR targeting develop on GitHub
 ```
 
 ---
 
 ## Submitting a PR
 
-1. **Target `develop`**, not `main`
+1. Target `develop`, not `main`
 2. Fill out the PR template checklist
 3. CI must pass (build + type check)
 4. At least one reviewer approval required
-5. Squash-merge preferred for feature branches
 
 ---
 
 ## Release process
 
-Releases are owner-only, triggered by pushing a version tag:
+Releases are owner-only and fully automated. When the owner pushes to `develop`, the release workflow automatically:
 
-```bash
-# Stable release (from main)
-git checkout main && git pull
-git tag v1.2.0
-git push origin v1.2.0
-
-# Pre-release / beta (from develop)
-git checkout develop && git pull
-git tag v1.2.0-beta.1
-git push origin v1.2.0-beta.1
-```
-
-This triggers `release.yml` which:
-1. Builds all packages
+1. Bumps the patch version
 2. Publishes `@dead-code-hunter/core` and `dead-code-hunter` to npm
-3. Publishes the VS Code extension to the VS Code Marketplace
-4. Publishes to Open VSX Registry (VSCodium / Gitpod)
-5. Creates a GitHub Release with the `.vsix` attached and auto-generated notes
+3. Creates a GitHub Release with auto-generated notes
 
-**Contributors do not need to worry about this** — just get the PR merged to `develop`.
-
----
-
-## Secrets management
-
-This project has **no runtime secrets**. The CLI and VS Code extension make no authenticated API calls. No secrets setup is needed for contributors.
-
-If you're the repo owner setting up CI for the first time, you need three GitHub repository secrets:
-
-| Secret | How to get it |
-|--------|--------------|
-| `NPM_TOKEN` | npmjs.com → Account → Access Tokens → "Automation" token |
-| `VSCE_PAT` | dev.azure.com → User settings → Personal access tokens → Marketplace (Manage) scope |
-| `OPEN_VSX_TOKEN` | open-vsx.org → User settings → Access token |
-
-Set them at: `https://github.com/APRILDAY23/dead-code-hunter/settings/secrets/actions`
+**Contributors don't need to worry about this** — just get the PR merged to `develop`.
 
 ---
 
 ## Code of conduct
 
-Be kind, be patient, be constructive. This is a community project.
-Issues and PRs that are abusive, spammy, or off-topic will be closed without comment.
+Be kind, be patient, be constructive. Issues and PRs that are abusive or spammy will be closed without comment.

@@ -4,8 +4,6 @@
 
 [![CI](https://github.com/APRILDAY23/dead-code-hunter/actions/workflows/ci.yml/badge.svg)](https://github.com/APRILDAY23/dead-code-hunter/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/dead-code-hunter.svg?color=red)](https://www.npmjs.com/package/dead-code-hunter)
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/VedaMoola.vscode-dead-code-hunter?label=VS%20Code&color=007ACC&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=VedaMoola.vscode-dead-code-hunter)
-[![VS Code Installs](https://img.shields.io/visual-studio-marketplace/i/VedaMoola.vscode-dead-code-hunter?label=installs)](https://marketplace.visualstudio.com/items?itemName=VedaMoola.vscode-dead-code-hunter)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
@@ -30,21 +28,15 @@ The analyzer **auto-detects** which languages are present in your project by sca
 
 ## Install
 
-### CLI
-
 ```bash
 npm install -g dead-code-hunter
 ```
 
-### VS Code Extension
-
-Search **"Dead Code Hunter"** in the VS Code Extensions panel, or:
+Or run without installing:
 
 ```bash
-code --install-extension VedaMoola.vscode-dead-code-hunter
+npx dead-code-hunter analyze
 ```
-
-Or [install from the Marketplace →](https://marketplace.visualstudio.com/items?itemName=VedaMoola.vscode-dead-code-hunter)
 
 ---
 
@@ -63,7 +55,7 @@ dch analyze --format json
 # HTML report (share with your team)
 dch analyze --format html --output report.html
 
-# SARIF output (GitHub Code Scanning / VS Code Problems panel)
+# SARIF output (GitHub Code Scanning)
 dch analyze --format sarif --output results.sarif
 
 # Fail CI if dead code is found (exit code 1)
@@ -99,45 +91,6 @@ Cleanup potential:
 
   scripts/migrate.py
     [fn]    run_old_migration   (line 22)  — Defined but never referenced outside its own file
-```
-
----
-
-## VS Code Extension
-
-### Features
-
-| Feature | Description |
-|---|---|
-| **Inline diagnostics** | Dead code underlined in the editor with configurable severity (hint/warning/error/info) |
-| **Sidebar panel** | Browse all dead symbols grouped by file, click any to jump directly to it |
-| **Interactive graph** | D3-powered force graph showing dead code clusters, filterable by symbol kind |
-| **Status bar** | Live count of dead symbols in the workspace |
-| **Auto-analyze on save** | Catch dead code as you write (optional) |
-| **Auto-analyze on open** | Analysis runs when the workspace loads (on by default) |
-| **Export HTML report** | One-click report to share with your team |
-
-### Commands
-
-Open the Command Palette (`Ctrl+Shift+P`) and type **Dead Code Hunter**:
-
-| Command | Description |
-|---|---|
-| `Dead Code Hunter: Analyze Workspace` | Run full analysis |
-| `Dead Code Hunter: Analyze Current File` | Analyze only the open file |
-| `Dead Code Hunter: Show Dependency Graph` | Open the D3 graph panel |
-| `Dead Code Hunter: Export HTML Report` | Save an HTML report |
-| `Dead Code Hunter: Clear Results` | Remove all diagnostics |
-
-### Settings
-
-```json
-{
-  "deadCodeHunter.analyzeOnSave": false,
-  "deadCodeHunter.analyzeOnOpen": true,
-  "deadCodeHunter.severity": "hint",
-  "deadCodeHunter.languages": ["typescript", "javascript", "python", "go"]
-}
 ```
 
 ---
@@ -181,7 +134,7 @@ Open the Command Palette (`Ctrl+Shift+P`) and type **Dead Code Hunter**:
 
 ## How It Works
 
-1. **Scan** — discovers all source files respecting `.gitignore` and config excludes; **auto-detects languages** from file extensions
+1. **Scan** — discovers all source files respecting `.gitignore` and config excludes; auto-detects languages from file extensions
 2. **Parse** — each language plugin extracts symbol definitions and references
 3. **Graph** — builds a cross-file reference graph (nodes = symbols, edges = usages)
 4. **Detect** — symbols with zero cross-file references are flagged as dead
