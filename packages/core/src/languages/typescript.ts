@@ -70,9 +70,21 @@ export const typescriptPlugin: LanguagePlugin = {
       }
 
       // --- References ---
-      if (ts.isIdentifier(node) && !ts.isDeclaration(node.parent)) {
-        const { line } = getPos(sf, node.getStart());
-        references.push({ name: node.text, file: filePath, line });
+      if (ts.isIdentifier(node)) {
+        const p = node.parent;
+        const isDefName =
+          (ts.isFunctionDeclaration(p) && p.name === node) ||
+          (ts.isClassDeclaration(p) && p.name === node) ||
+          (ts.isVariableDeclaration(p) && p.name === node) ||
+          (ts.isInterfaceDeclaration(p) && p.name === node) ||
+          (ts.isTypeAliasDeclaration(p) && p.name === node) ||
+          (ts.isEnumDeclaration(p) && p.name === node) ||
+          (ts.isMethodDeclaration(p) && p.name === node) ||
+          (ts.isPropertyDeclaration(p) && p.name === node);
+        if (!isDefName) {
+          const { line } = getPos(sf, node.getStart());
+          references.push({ name: node.text, file: filePath, line });
+        }
       }
 
       ts.forEachChild(node, visit);
